@@ -319,7 +319,8 @@
 
 <footer>
   사진 출처: 위키미디어 공용(Wikimedia Commons), 자유 이용 저작물 · 꽃 분해 그림은 수업용으로 제작<br>
-  장미 이야기는 수상한생선 '장미 해부' 영상을 참고했어요 · 초등 5학년 과학 '꽃의 구조' 수업 자료
+  사진 중 일부는 우리나라 꽃과 같은 무리의 꽃을 다른 나라에서 찍은 것이에요 · 장미 이야기는 수상한생선 '장미 해부' 영상을 참고했어요<br>
+  초등 5학년 과학 '꽃의 구조' 수업 자료
 </footer>
 
 <script>
@@ -358,38 +359,37 @@ function lily() {
     }
     return s;
   };
-  const sepal = tepal(33, 172, 0), petal = tepal(46, 164, 9);
+  const outer = tepal(33, 172, 0), inner = tepal(46, 164, 9);
   const stamen = `<path d="M0,-6Q6,-45 0,-84" fill="none" stroke="#B9D486" stroke-width="3.4" stroke-linecap="round"/>` +
     `<rect x="-15" y="-94" width="30" height="11" rx="5.5" fill="#C9631C" stroke="#8E3F0C"/>` +
     `<path d="M-9,-90H9" stroke="#F0A257" stroke-width="2" stroke-linecap="round"/>` + hit("M0,-6V-90");
   const stigma = (x, y) => [90, 210, 330].map((a) =>
     `<circle cx="${r1(x + 5 * Math.cos(a * RAD))}" cy="${r1(y - 5 * Math.sin(a * RAD))}" r="6" fill="#86B84F" stroke="#5C8A30"/>`).join("");
   const parts = [];
-  for (let i = 0; i < 3; i++) parts.push(["sepal", rot(i * 120, sepal)]);
-  for (let i = 0; i < 3; i++) parts.push(["petal", rot(i * 120 + 60, petal)]);
+  // 백합은 꽃받침과 꽃잎이 구별되지 않는다(꽃덮이). 바깥 3장과 안쪽 3장을 모두 꽃잎으로 센다
+  for (let i = 0; i < 3; i++) parts.push(["petal", rot(i * 120, outer), mini(outer, [-30, -175, 60, 178], 64)]);
+  for (let i = 0; i < 3; i++) parts.push(["petal", rot(i * 120 + 60, inner), mini(inner, [-40, -167, 80, 170], 64)]);
   parts.push([null, `<circle r="13" fill="#CFE39A" stroke="#9DBB5C"/>`]);
   for (let i = 0; i < 6; i++) parts.push(["stamen", rot(i * 60 + 30, stamen)]);
   parts.push(["pistil", `<path d="M0,0Q9,-18 4,-34" fill="none" stroke="#9CC466" stroke-width="6" stroke-linecap="round"/>${stigma(4, -40)}`]);
   return {
     id: "lily", name: "백합", parts,
-    ask: "꽃잎이 6장처럼 보이죠? 정말 6장일까요? 꽃을 눌러서 한 장씩 떼어 보세요.",
+    ask: "백합의 꽃받침은 어디에 있을까요? 꽃을 눌러서 한 장씩 떼어 보세요.",
     unit: { sepal: "장", petal: "장", stamen: "개", pistil: "개" },
-    sum: { sepal: "3장", petal: "3장", stamen: "6개", pistil: "1개" },
+    sum: { sepal: "없음", petal: "6장", stamen: "6개", pistil: "1개" },
     mini: {
-      sepal: mini(sepal, [-30, -175, 60, 178], 64),
-      petal: mini(petal, [-40, -167, 80, 170], 64),
       stamen: mini(stamen, [-18, -97, 36, 100], 50),
       pistil: diagram(`<path d="M34,124C23,112 25,96 34,88C43,96 45,112 34,124Z" fill="#9CC466" stroke="#5C8A30"/>` +
         `<path d="M34,88V30" stroke="#B9D486" stroke-width="5" stroke-linecap="round"/>${stigma(34, 22)}` + pistilTags),
     },
     dia: { stamen: stamenDia("#B9D486", `<rect x="13" y="12" width="42" height="15" rx="7.5" fill="#C9631C" stroke="#8E3F0C"/>`) },
     find: {
-      sepal: "바깥쪽 3장은 꽃잎이 아니라 꽃받침이에요! 백합은 꽃받침이 꽃잎과 색도 모양도 닮았어요. 안쪽 것보다 조금 좁아요.",
-      petal: "안쪽 3장이 진짜 꽃잎이에요. 그러니까 백합의 꽃잎은 6장이 아니라 3장이에요.",
+      sepal: "백합에는 꽃받침이 따로 없어요. 바깥쪽 3장이 꽃받침 자리에 나지만, 꽃잎과 똑같이 생겨서 따로 나누지 않아요. 이렇게 꽃받침과 꽃잎이 구별되지 않는 조각을 '꽃덮이'라고도 해요. 튤립도 그래요.",
+      petal: "꽃잎은 6장이에요. 바깥쪽 3장은 조금 좁고, 안쪽 3장은 조금 넓어요.",
       stamen: "수술은 6개예요. 꽃밥에 주황색 꽃가루가 잔뜩 묻어 있어요. 옷에 묻으면 잘 안 지워져서, 꽃집에서는 꽃밥을 미리 떼어 내기도 해요.",
       pistil: "암술은 1개예요. 암술머리가 세 갈래로 갈라져 있고 끈적끈적해요. 왜 그럴까요? 꽃가루가 잘 달라붙게 하려는 거예요.",
     },
-    done: "3장, 3장, 6개, 그리고 세 갈래. 백합은 숫자 3을 참 좋아하네요!",
+    done: "꽃잎 6장, 수술 6개, 세 갈래로 갈라진 암술머리. 백합은 숫자 3과 친하네요! 꽃받침이 따로 없는 것도 백합의 특징이에요.",
   };
 }
 
@@ -435,9 +435,9 @@ function rose() {
     dia: { stamen: stamenDia("#D9BC4F", `<ellipse cx="34" cy="17" rx="9" ry="11" fill="#E3A51C" stroke="#A8700A"/>`) },
     find: {
       sepal: "꽃받침은 5장이에요. 장미와 친척인 벚나무, 사과나무, 딸기도 대부분 꽃받침이 5장, 꽃잎이 5장이에요.",
-      petal: "41장이나 돼요! 그런데 들에서 자라는 장미는 꽃잎이 5장뿐이에요. 수술이 될 자리에 꽃잎이 생긴 장미를 사람들이 골라 오랫동안 키워서, 꽃잎이 겹겹이 많아졌어요. 지금 장미 품종은 3만 가지가 넘어요.",
+      petal: "이 장미는 꽃잎이 41장이나 돼요! 꽃잎 수는 품종마다 달라요. 그런데 들에서 자라는 장미는 꽃잎이 5장뿐이에요. 수술이 될 자리에 꽃잎이 생긴 장미를 사람들이 골라 오랫동안 키워서, 꽃잎이 겹겹이 많아졌어요. 지금 장미 품종은 3만 가지가 넘어요.",
       stamen: "꽃잎 속에 꼭꼭 숨어 있었죠? 바깥쪽에 빙 둘러 난 것이 수술이에요. 진짜 장미에는 훨씬 더 많아요. 그림에는 24개만 그렸어요.",
-      pistil: "한가운데 모여 있는 것이 암술이에요. 장미는 암술도 여러 개예요. 수술과 암술이 꽃잎에 푹 덮여 있어서 꽃가루받이가 잘 안 돼요. 그래서 장미 열매는 보기 힘들어요. 꽃가루받이가 되면 꽃받침 아래쪽이 부풀어 열매(로즈힙)가 돼요.",
+      pistil: "한가운데 모여 있는 것이 암술이에요. 장미는 암술도 여러 개예요. 수술과 암술이 꽃잎에 푹 덮여 있어서 꽃가루받이가 잘 안 돼요. 그래서 장미 열매는 보기 힘들어요. 꽃가루받이가 되면 꽃받침 아래쪽(꽃받기)이 부풀어 열매(로즈힙)가 돼요.",
     },
     done: "꽃받침은 5장인데 꽃잎은 41장! 장미 가시는 줄기 껍질이 변한 거예요. 동물에게서 몸을 지키고, 덩굴장미가 다른 것을 타고 오르게 도와줘요.",
   };
@@ -523,12 +523,13 @@ function load(i) {
   cur = FLOWERS[i];
   got = {}; total = {};
   ORDER.forEach((k) => { got[k] = 0; total[k] = cur.parts.filter((p) => p[0] === k).length; });
-  flowerEl.innerHTML = cur.parts.map(([k, h]) => k
-    ? `<g class="part" data-kind="${k}" tabindex="0" role="button" aria-label="${KIND[k].name} 떼기">${h}</g>` : h).join("");
+  flowerEl.innerHTML = cur.parts.map(([k, h], i) => k
+    ? `<g class="part" data-kind="${k}" data-i="${i}" tabindex="0" role="button" aria-label="${KIND[k].name} 떼기">${h}</g>` : h).join("");
   tray.innerHTML = ORDER.map((k) => `
     <div class="box" data-kind="${k}">
       <div class="box-head"><i style="background:${KIND[k].color}"></i><span class="box-name">${KIND[k].name}</span>
-        <button class="all">한꺼번에</button><span class="box-count"><b>0</b> / ${total[k]}${cur.unit[k]}</span></div>
+        ${total[k] ? `<button class="all">한꺼번에</button><span class="box-count"><b>0</b> / ${total[k]}${cur.unit[k]}</span>`
+          : `<span class="box-count"><b>?</b></span>`}</div>
       <p class="role">${KIND[k].role}</p>
       <div class="specimens"></div>
       <div class="find" hidden>${cur.dia[k] || ""}<p>${cur.find[k]}</p></div>
@@ -551,18 +552,25 @@ function pluck(el) {
     transform: `translate(${r1(x / d * 90)}px,${r1(y / d * 90 - 40)}px) rotate(${x < 0 ? -30 : 30}deg) scale(.6)`, opacity: 0,
   }], { duration: calm ? 0 : 450, easing: "ease-in", fill: "forwards" }).onfinish = () => el.remove();
   box.querySelector("b").textContent = n;
-  box.querySelector(".specimens").insertAdjacentHTML("beforeend", cur.mini[k]);
+  box.querySelector(".specimens").insertAdjacentHTML("beforeend", cur.parts[el.dataset.i][2] || cur.mini[k]);
   said.textContent = `${KIND[k].name}을 떼었어요 · ${n} / ${total[k]}${cur.unit[k]}`;
   if (n < total[k]) return;
-  box.classList.add("done");
-  box.querySelector(".find").hidden = false;
-  solved.add(cur.id + k);
-  compare();
+  finish(k);
   if (ORDER.every((q) => got[q] === total[q])) {
+    // 이 꽃에 없는 부분(백합의 꽃받침)은 다 떼고 나서 '없음'으로 알려 준다
+    ORDER.filter((q) => !total[q]).forEach((q) => { tray.querySelector(`[data-kind=${q}] b`).textContent = "없음"; finish(q); });
     said.textContent = "다 떼었어요. 가운데 남은 것은 꽃받기예요. 꽃의 모든 부분이 여기에 붙어 있었어요.";
     doneEl.innerHTML = `<b>${cur.name} 분해 끝!</b>${cur.done}`;
     doneEl.hidden = false;
   }
+  compare();
+}
+
+function finish(k) {
+  const box = tray.querySelector(`[data-kind=${k}]`);
+  box.classList.add("done");
+  box.querySelector(".find").hidden = false;
+  solved.add(cur.id + k);
 }
 
 function compare() {
@@ -590,10 +598,10 @@ const ITEMS = [
     fact: "들에서 자라는 야생 장미예요. 꽃잎이 딱 5장이죠? 수술과 암술도 훤히 보여요. 우리가 아는 겹겹의 장미는 이런 들장미를 사람이 오랫동안 가꾸어 만든 거예요." },
   { name: "벚꽃", emoji: "🌸", group: "free", file: "cherry.jpg", when: "4월",
     fact: "장미와 친척이에요. 그래서 꽃잎도 5장, 꽃받침도 5장! 꽃잎 끝이 살짝 파여 있어요. 꽃이 지고 나면 그 자리에 버찌가 열려요." },
-  { name: "무궁화", emoji: "🌺", group: "free", file: "mugung.jpg", when: "7~9월",
+  { name: "무궁화", emoji: "🌺", group: "free", file: "mugung.jpg", when: "7~10월",
     fact: "우리나라 꽃이에요. 꽃잎은 5장이고, 수술 여러 개가 암술대를 통처럼 감싸고 있어요. 한 송이는 아침에 피어 저녁에 지지만, 날마다 새 꽃이 피어서 여름 내내 볼 수 있어요." },
   { name: "튤립", emoji: "🌷", group: "free", file: "tulip.jpg", when: "4~5월",
-    fact: "백합과 친척이에요. 백합처럼 꽃받침과 꽃잎이 똑같이 생겨서 꽃잎이 6장으로 보여요. 수술은 6개, 암술은 1개예요." },
+    fact: "백합과 친척이에요. 튤립도 백합처럼 꽃받침이 따로 없어요. 꽃잎 6장이 수술 6개와 암술 1개를 감싸고 있어요." },
   { name: "진달래", emoji: "💗", group: "tube", file: "jindal.jpg", when: "3~4월",
     fact: "철쭉과 친척인 통꽃이에요. 잎보다 꽃이 먼저 피어요. 철쭉과 달리 먹을 수 있어서, 옛날부터 꽃잎으로 화전을 부쳐 먹었어요." },
   { name: "개나리", emoji: "💛", group: "tube", file: "gaenari.jpg", when: "3~4월",
@@ -604,11 +612,11 @@ const ITEMS = [
     pair: { a: ["암꽃 보기", "pumpkin-f.jpg"], b: ["수꽃 보기", "pumpkin-m.jpg"] },
     fact: "호박은 암꽃과 수꽃이 따로 피어요. 암꽃 아래에는 아기 호박처럼 통통한 씨방이 달려 있어요. 벌이 수꽃의 꽃가루를 암꽃으로 옮겨 주면 씨방이 자라서 호박이 돼요." },
   { name: "해바라기", emoji: "🌻", group: "many", file: "sunflower.jpg", when: "8~9월",
-    fact: "한 송이처럼 보이지만 작은 꽃 수백 송이가 모인 거예요. 가장자리의 노란 꽃잎 하나, 가운데 작은 점 하나하나가 모두 꽃이에요." },
+    fact: "한 송이처럼 보이지만 작은 꽃이 수백 송이에서 천 송이 넘게 모인 거예요. 가장자리의 노란 꽃잎 하나, 가운데 작은 점 하나하나가 모두 꽃이에요." },
   { name: "민들레", emoji: "🌼", group: "many", file: "dandelion.jpg", when: "4~5월",
     fact: "꽃잎처럼 보이는 것 하나하나가 꽃 한 송이예요. 꽃마다 씨가 하나씩 생기고, 솜털을 달고 바람에 날아가요." },
   { name: "수국", emoji: "💠", group: "many", file: "hydrangea.jpg", when: "6~7월",
-    fact: "꽃잎처럼 보이는 것은 사실 꽃받침이에요. 백합의 바깥쪽 3장처럼요. 흙의 성질에 따라 꽃 색이 파랑이나 분홍으로 달라져요." },
+    fact: "꽃잎처럼 보이는 것은 사실 꽃받침이에요. 곤충을 부르려고 꽃받침이 크고 화려해졌어요. 흙의 성질에 따라 꽃 색이 파랑이나 분홍으로 달라져요." },
   { name: "옥수수", emoji: "🌽", group: "wind", when: "7~8월",
     pair: { a: ["수꽃 보기", "corn-m.jpg"], b: ["암꽃 보기", "corn-f.jpg"] },
     fact: "꽃잎이 없는 꽃이에요. 꼭대기 수꽃의 꽃가루가 바람에 날려, 아래쪽 암꽃의 수염(암술)에 붙어요. 곤충을 부를 필요가 없어서 꽃이 화려하지 않아요. 수염 한 가닥이 옥수수 알 하나와 이어져 있어요." },
