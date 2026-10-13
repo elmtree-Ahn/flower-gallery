@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꽃 탐험대</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #FFF6F1;
+    --panel: #FFFFFF;
+    --line: #F5CFDB;
+    --text: #4A2636;
+    --muted: #8C6B79;
+    --accent: #E84C82;
+    --soft: #FDE3EC;
+    --leaf: #4E9F6A;
+    --font-display: 'Jua', 'Apple SD Gothic Neo', sans-serif;
+    --font-body: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background:
+      radial-gradient(circle at 6% 3%, #FFD9E6 0, transparent 32%),
+      radial-gradient(circle at 95% 9%, #FFF0BF 0, transparent 28%),
+      radial-gradient(circle at 85% 97%, #DBF3E2 0, transparent 34%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 20px clamp(12px, 3vw, 40px) 40px;
+  }
+  header { text-align: center; margin-bottom: 16px; }
+  header h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(28px, 4.5vw, 46px);
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+  header p { color: var(--muted); font-size: clamp(13px, 1.6vw, 17px); margin-top: 4px; }
+  button { font-family: var(--font-display); font-weight: 400; color: var(--text); cursor: pointer; }
+  button:focus-visible, .part:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .modes, .picker, .view-toggle { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+  .modes { margin-bottom: 16px; }
+  .modes button, .view-toggle button {
+    font-size: clamp(18px, 2.2vw, 24px);
+    background: var(--panel);
+    border: 3px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 30px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .modes button:hover, .view-toggle button:hover { border-color: var(--accent); }
+  .modes button.on, .view-toggle button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* 꽃 분해하기 */
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  .picker { margin-bottom: 14px; }
+  .picker button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: clamp(18px, 2.2vw, 24px);
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 6px 22px 6px 10px;
+    transition: transform 0.1s, border-color 0.15s, background 0.15s;
+  }
+  .picker button svg { width: 48px; height: 48px; }
+  .picker button:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .picker button.active { background: var(--soft); border-color: var(--accent); color: var(--accent); }
+  .bench { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .stage {
+    background: radial-gradient(circle at 50% 42%, #F6FCF5 0, #DFF2E7 62%, #CDE8E2 100%);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px 14px 14px;
+    text-align: center;
+  }
+  .left { display: grid; gap: 16px; }
+  .real { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .real img { display: block; width: 100%; height: clamp(240px, 42vh, 440px); object-fit: contain; background: #120A0E; }
+  .real figcaption { padding: 10px 14px; text-align: center; font-weight: 700; font-size: clamp(14px, 1.8vw, 17px); }
+  #flower { display: block; width: 100%; max-height: 60vh; }
+  .part {
+    cursor: pointer;
+    transform-box: fill-box;
+    transform-origin: center;
+    filter: drop-shadow(0 1px 1.5px rgba(70, 20, 40, 0.3));
+  }
+  .part:hover { filter: drop-shadow(0 0 4px #fff) brightness(1.08); }
+  .part.gone { pointer-events: none; }
+  .said { font-weight: 700; font-size: clamp(15px, 1.9vw, 19px); min-height: 1.6em; }
+  .tools { margin-top: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  .tools button, .tools a, .all {
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--text);
+    text-decoration: none;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 16px;
+  }
+  .tools button:hover, .tools a:hover, .all:hover { border-color: var(--accent); color: var(--accent); }
+
+  .tray { display: grid; gap: 10px; }
+  .box {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 10px 14px 12px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .box.done { border-color: var(--leaf); background: #F5FCF3; }
+  .box-head { display: flex; align-items: center; gap: 8px; }
+  .box-head i { width: 14px; height: 14px; border-radius: 50%; }
+  .box-name { font-family: var(--font-display); font-size: 23px; }
+  .box.done .box-name::after { content: " ✔"; color: var(--leaf); }
+  .all { font-size: 13px; padding: 2px 12px; }
+  .box.done .all { display: none; }
+  .box-count { margin-left: auto; color: var(--muted); font-weight: 700; }
+  .box-count b { font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--accent); }
+  .role { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .specimens { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; min-height: 30px; margin-top: 6px; }
+  .mini, .diagram { animation: pop 0.25s ease-out; flex: 0 0 auto; }
+  .diagram text { font: 500 13px var(--font-body); fill: var(--text); }
+  @keyframes pop { from { transform: scale(0.3); opacity: 0; } }
+  .find {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #FFF4CF;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .done-note {
+    margin-top: 16px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    background: var(--soft);
+    border: 2px solid var(--accent);
+    font-size: clamp(15px, 1.8vw, 18px);
+    line-height: 1.6;
+    text-align: center;
+  }
+  .done-note b { font-family: var(--font-display); font-weight: 400; font-size: 1.25em; color: var(--accent); margin-right: 6px; }
+  .compare {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .compare caption { font-family: var(--font-display); font-size: 20px; padding-bottom: 8px; }
+  .compare th, .compare td { padding: 9px 6px; border-top: 1px solid var(--line); }
+  .compare tr:first-child th { border-top: 0; background: var(--soft); }
+  .compare th { font-family: var(--font-display); font-weight: 400; font-size: 18px; }
+  .compare td { font-weight: 700; color: var(--accent); }
+  .compare td.q { color: #D9C3CC; }
+
+  /* 여러 가지 꽃 */
+  .viewer { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .photo-stage { position: relative; background: #FBEDF2; }
+  .photo-stage img { display: block; width: 100%; height: clamp(300px, 56vh, 620px); object-fit: contain; }
+  .nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    font-size: 24px;
+    transition: background 0.15s;
+  }
+  .nav:hover, .car-nav:hover { background: var(--accent); color: #fff; }
+  .nav.prev { left: 14px; }
+  .nav.next { right: 14px; }
+  .view-toggle { display: none; padding: 14px 0 0; }
+  .view-toggle.on { display: flex; }
+  .caption { padding: 14px 22px 20px; text-align: center; }
+  .caption .name { font-family: var(--font-display); font-size: clamp(24px, 3.2vw, 36px); }
+  .caption .name .emoji { margin-right: 8px; }
+  .caption .when { color: var(--accent); font-size: clamp(15px, 2vw, 20px); font-weight: 700; margin-top: 6px; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-left: 8px;
+    vertical-align: 2px;
+  }
+  .tag.free { background: #FBD0DF; color: #7A1840; }
+  .tag.tube { background: #E2D4FA; color: #3D1F6E; }
+  .tag.many { background: #FCE9A9; color: #5A4300; }
+  .tag.wind { background: #CFEAF7; color: #0F4560; }
+  .tag.bird { background: #D2EFD6; color: #1B5A2A; }
+  .caption .fact { color: var(--muted); font-size: clamp(14px, 1.8vw, 17px); line-height: 1.6; margin-top: 8px; }
+  .carousel { margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+  .car-nav {
+    flex: 0 0 auto;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    transition: background 0.15s;
+  }
+  .track { flex: 1; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 6px 2px; }
+  .track::-webkit-scrollbar { display: none; }
+  .track button {
+    flex: 0 0 auto;
+    width: 118px;
+    font-size: clamp(15px, 1.7vw, 18px);
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 6px;
+    transition: transform 0.1s, border-color 0.15s, background 0.15s;
+  }
+  .track button .emoji { display: block; font-size: 26px; margin-bottom: 4px; }
+  .track button:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .track button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  footer { max-width: 1100px; margin: 26px auto 0; text-align: center; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+  @media (max-width: 820px) { .bench { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    .picker button:hover, .track button:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="lilyG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#D3E7A2"/><stop offset=".2" stop-color="#FCFEF4"/><stop offset=".65" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFE4EE"/></linearGradient>
+  <linearGradient id="leafG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3F9A5E"/><stop offset="1" stop-color="#7CC98A"/></linearGradient>
+  <linearGradient id="roseG0" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#7E0A27"/><stop offset=".55" stop-color="#C4163F"/><stop offset="1" stop-color="#DE3559"/></linearGradient>
+  <linearGradient id="roseG1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#8F0D2D"/><stop offset=".55" stop-color="#D41F49"/><stop offset="1" stop-color="#EC4A6C"/></linearGradient>
+  <linearGradient id="roseG2" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9C1132"/><stop offset=".55" stop-color="#DF2A54"/><stop offset="1" stop-color="#F4627F"/></linearGradient>
+  <radialGradient id="azG"><stop offset="0" stop-color="#FFF4F8"/><stop offset=".25" stop-color="#FFD0E1"/><stop offset=".75" stop-color="#F9A3C4"/><stop offset="1" stop-color="#F585B0"/></radialGradient>
+  <radialGradient id="azThroat"><stop offset="0" stop-color="#B93A72"/><stop offset="1" stop-color="#F08AB2" stop-opacity="0"/></radialGradient>
+</defs></svg>
+
+<header>
+  <h1>🌸 꽃 탐험대</h1>
+  <p>꽃잎을 한 장씩 떼어 보면, 그 속에는 무엇이 숨어 있을까요?</p>
+</header>
+
+<div class="modes">
+  <button id="labBtn" class="on">🔍 꽃 분해하기</button>
+  <button id="gardenBtn">🌼 여러 가지 꽃</button>
+</div>
+
+<section class="wrap" id="lab">
+  <div class="picker" id="picker"></div>
+  <div class="bench">
+    <div class="left">
+    <div class="stage">
+      <svg id="flower" viewBox="-210 -210 420 420"></svg>
+      <p class="said" id="said" aria-live="polite"></p>
+      <div class="tools">
+        <button id="resetBtn">↺ 다시 붙이기</button>
+        <a id="videoLink" href="https://www.youtube.com/watch?v=8-eQrRayqk0" target="_blank" rel="noopener">🎬 장미 해부 영상 보기</a>
+      </div>
+    </div>
+    <figure class="real">
+      <img id="realPhoto" src="" alt="">
+      <figcaption id="realCap"></figcaption>
+    </figure>
+    </div>
+    <div class="tray" id="tray"></div>
+  </div>
+  <p class="done-note" id="done" hidden></p>
+  <table class="compare">
+    <caption>세 꽃 비교하기 · 다 뗀 칸부터 채워져요</caption>
+    <tbody id="compare"></tbody>
+  </table>
+</section>
+
+<section class="wrap" id="garden" hidden>
+  <div class="viewer">
+    <div class="photo-stage">
+      <img id="photo" src="" alt="">
+      <button class="nav prev" id="prevBtn" aria-label="이전 꽃">◀</button>
+      <button class="nav next" id="nextBtn" aria-label="다음 꽃">▶</button>
+    </div>
+    <div class="view-toggle" id="viewToggle">
+      <button id="aBtn"></button>
+      <button id="bBtn"></button>
+    </div>
+    <div class="caption">
+      <div class="name" id="capName"></div>
+      <div class="when" id="capWhen"></div>
+      <div class="fact" id="capFact"></div>
+    </div>
+  </div>
+  <div class="carousel">
+    <button class="car-nav" id="carPrev" aria-label="버튼 목록 왼쪽으로">◀</button>
+    <div class="track" id="buttons"></div>
+    <button class="car-nav" id="carNext" aria-label="버튼 목록 오른쪽으로">▶</button>
+  </div>
+</section>
+
+<footer>
+  사진 출처: 위키미디어 공용(Wikimedia Commons), 자유 이용 저작물 · 꽃 분해 그림은 수업용으로 제작<br>
+  장미 이야기는 수상한생선 '장미 해부' 영상을 참고했어요 · 초등 5학년 과학 '꽃의 구조' 수업 자료
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const RAD = Math.PI / 180;
+const r1 = (v) => +v.toFixed(1);
+
+/* ---------- 꽃 그리기 도구 ---------- */
+const rot = (a, s) => `<g transform="rotate(${r1(a)})">${s}</g>`;
+// 작은 조각도 누르기 쉽게 투명한 굵은 선을 덧댄다
+const hit = (d) => `<path d="${d}" fill="none" stroke="transparent" stroke-width="12" stroke-linecap="round"/>`;
+// 꽃잎 모양: 밑이 (0,0), 끝이 (0,-h). round면 끝이 둥글다
+function leaf(w, h, round) {
+  const p = round ? [-1.1, .15, -1.15, .95, 1.15, .95, 1.1, .15] : [-1, .25, -1, .7, 1, .7, 1, .25];
+  const [a, b, c, d, e, f, g, i] = p.map((v, k) => r1(k % 2 ? -v * h : v * w));
+  return `M0,0C${a},${b} ${c},${d} 0,${-h}C${e},${f} ${g},${i} 0,0Z`;
+}
+const mini = (inner, [x, y, w, h], px) =>
+  `<svg class="mini" viewBox="${x} ${y} ${w} ${h}" width="${Math.round(px * w / h)}" height="${px}" aria-hidden="true">${inner}</svg>`;
+const diagram = (inner, w = 150, h = 128) =>
+  `<svg class="diagram" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${inner}</svg>`;
+const tag = (x, y, t, x0, y0) => `<path d="M${x0},${y0}L${x - 4},${y - 4}" stroke="#B79AA6"/><text x="${x}" y="${y}">${t}</text>`;
+const stamenDia = (fil, anther) => diagram(
+  `<path d="M34,100Q41,62 34,26" fill="none" stroke="${fil}" stroke-width="4" stroke-linecap="round"/>${anther}` +
+  tag(74, 24, "꽃밥", 55, 20) + tag(74, 70, "수술대", 41, 66), 124, 106);
+const pistilTags = tag(86, 26, "암술머리", 56, 22) + tag(86, 66, "암술대", 44, 62) + tag(86, 116, "씨방", 50, 112);
+
+function lily() {
+  const tepal = (w, h, spots) => {
+    let s = `<path d="${leaf(w, h)}" fill="url(#lilyG)" stroke="#E2B4C8"/>` +
+      `<path d="${leaf(w * .3, h * .86)}" fill="#F48FB5" opacity=".45"/>` +
+      `<path d="M0,-8V${-h * .9}" stroke="#E0709B" opacity=".6"/>`;
+    for (let i = 0; i < spots; i++) {
+      const y = -26 - i * 37 % 58;
+      s += `<circle cx="${r1((i * 53 % 21 - 10) * (1 - y / 120))}" cy="${y}" r="1.8" fill="#B2305F"/>`;
+    }
+    return s;
+  };
+  const sepal = tepal(33, 172, 0), petal = tepal(46, 164, 9);
+  const stamen = `<path d="M0,-6Q6,-45 0,-84" fill="none" stroke="#B9D486" stroke-width="3.4" stroke-linecap="round"/>` +
+    `<rect x="-15" y="-94" width="30" height="11" rx="5.5" fill="#C9631C" stroke="#8E3F0C"/>` +
+    `<path d="M-9,-90H9" stroke="#F0A257" stroke-width="2" stroke-linecap="round"/>` + hit("M0,-6V-90");
+  const stigma = (x, y) => [90, 210, 330].map((a) =>
+    `<circle cx="${r1(x + 5 * Math.cos(a * RAD))}" cy="${r1(y - 5 * Math.sin(a * RAD))}" r="6" fill="#86B84F" stroke="#5C8A30"/>`).join("");
+  const parts = [];
+  for (let i = 0; i < 3; i++) parts.push(["sepal", rot(i * 120, sepal)]);
+  for (let i = 0; i < 3; i++) parts.push(["petal", rot(i * 120 + 60, petal)]);
+  parts.push([null, `<circle r="13" fill="#CFE39A" stroke="#9DBB5C"/>`]);
+  for (let i = 0; i < 6; i++) parts.push(["stamen", rot(i * 60 + 30, stamen)]);
+  parts.push(["pistil", `<path d="M0,0Q9,-18 4,-34" fill="none" stroke="#9CC466" stroke-width="6" stroke-linecap="round"/>${stigma(4, -40)}`]);
+  return {
+    id: "lily", name: "백합", parts,
+    ask: "꽃잎이 6장처럼 보이죠? 정말 6장일까요? 꽃을 눌러서 한 장씩 떼어 보세요.",
+    unit: { sepal: "장", petal: "장", stamen: "개", pistil: "개" },
+    sum: { sepal: "3장", petal: "3장", stamen: "6개", pistil: "1개" },
+    mini: {
+      sepal: mini(sepal, [-30, -175, 60, 178], 64),
+      petal: mini(petal, [-40, -167, 80, 170], 64),
+      stamen: mini(stamen, [-18, -97, 36, 100], 50),
+      pistil: diagram(`<path d="M34,124C23,112 25,96 34,88C43,96 45,112 34,124Z" fill="#9CC466" stroke="#5C8A30"/>` +
+        `<path d="M34,88V30" stroke="#B9D486" stroke-width="5" stroke-linecap="round"/>${stigma(34, 22)}` + pistilTags),
+    },
+    dia: { stamen: stamenDia("#B9D486", `<rect x="13" y="12" width="42" height="15" rx="7.5" fill="#C9631C" stroke="#8E3F0C"/>`) },
+    find: {
+      sepal: "바깥쪽 3장은 꽃잎이 아니라 꽃받침이에요! 백합은 꽃받침이 꽃잎과 색도 모양도 닮았어요. 안쪽 것보다 조금 좁아요.",
+      petal: "안쪽 3장이 진짜 꽃잎이에요. 그러니까 백합의 꽃잎은 6장이 아니라 3장이에요.",
+      stamen: "수술은 6개예요. 꽃밥에 주황색 꽃가루가 잔뜩 묻어 있어요. 옷에 묻으면 잘 안 지워져서, 꽃집에서는 꽃밥을 미리 떼어 내기도 해요.",
+      pistil: "암술은 1개예요. 암술머리가 세 갈래로 갈라져 있고 끈적끈적해요. 왜 그럴까요? 꽃가루가 잘 달라붙게 하려는 거예요.",
+    },
+    done: "3장, 3장, 6개, 그리고 세 갈래. 백합은 숫자 3을 참 좋아하네요!",
+  };
+}
+
+function rose() {
+  const sepal = `<path d="${leaf(17, 178)}" fill="url(#leafG)" stroke="#2F7D4C"/><path d="M0,-10V-160" stroke="#2F7D4C" opacity=".5"/>`;
+  const stamen = (L) => `<path d="M0,-14V${-L}" stroke="#EAD27C" stroke-width="1.8"/>` +
+    `<ellipse cy="${-L - 2}" rx="4.4" ry="3" fill="#E3A51C" stroke="#A8700A" stroke-width=".7"/>` + hit(`M0,-14V${-L - 3}`);
+  const petal = (w, h, tone) => `<path d="${leaf(w, h, true)}" fill="url(#roseG${tone})" stroke="#8E0E2E" stroke-width=".9"/>` +
+    `<path d="M${r1(-w * .6)},${r1(-h * .82)}Q0,${r1(-h * 1.03)} ${r1(w * .6)},${r1(-h * .82)}" fill="none" stroke="#FFB1C4" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>`;
+  const parts = [];
+  for (let i = 0; i < 5; i++) parts.push(["sepal", rot(i * 72 + 36, sepal)]);
+  parts.push([null, `<circle r="17" fill="#D3E08F" stroke="#9DB45A"/>`]);
+  // 수술과 암술은 꽃잎보다 먼저 그려서, 꽃잎을 떼어야 보이게 한다
+  for (let i = 0; i < 24; i++) parts.push(["stamen", rot(i * 15, stamen(i % 2 ? 48 : 36))]);
+  let dots = "";
+  for (let i = 0; i < 9; i++) {
+    const r = 3.2 * Math.sqrt(i);
+    dots += `<circle cx="${r1(r * Math.cos(i * 2.4))}" cy="${r1(r * Math.sin(i * 2.4))}" r="2.6" fill="#F4EBB5" stroke="#B5A24A" stroke-width=".7"/>`;
+  }
+  parts.push(["pistil", `<circle r="12" fill="transparent"/>${dots}`]);
+  // 꽃잎 41장: 황금각 나선. 바깥 것부터 그려서 안쪽 꽃잎이 위에 온다
+  for (let i = 40; i >= 0; i--) {
+    const s = Math.sqrt(i), h = 34 + 6.2 * s;
+    parts.push(["petal", `<g transform="rotate(${r1(i * 137.5 % 360)}) translate(0,${r1(h * .42 - 15.5 * s)})">${petal(21 + 5 * s, h, i < 8 ? 0 : i < 22 ? 1 : 2)}</g>`]);
+  }
+  let urn = `<path d="M22,62C8,86 16,122 40,124C64,122 72,86 58,62" fill="#E6F1CD" stroke="#5C8A30" stroke-width="2"/>`;
+  for (let k = 0; k < 5; k++) {
+    const x = 26 + 7 * k, top = r1(x + (x - 40) * .9);
+    urn += `<path d="M${x},106Q${r1(40 + (x - 40) * .5)},70 ${top},40" fill="none" stroke="#B5A24A" stroke-width="1.6"/>` +
+      `<ellipse cx="${x}" cy="110" rx="3.4" ry="6" fill="#C9D97A" stroke="#8FA648"/><circle cx="${top}" cy="38" r="3" fill="#F4EBB5" stroke="#B5A24A"/>`;
+  }
+  return {
+    id: "rose", name: "장미", parts, video: true,
+    ask: "장미 꽃잎은 모두 몇 장일까요? 수술과 암술은 어디에 숨어 있을까요?",
+    unit: { sepal: "장", petal: "장", stamen: "개", pistil: "묶음" },
+    sum: { sepal: "5장", petal: "41장", stamen: "아주 많음", pistil: "여러 개" },
+    mini: {
+      sepal: mini(sepal, [-16, -181, 32, 184], 60),
+      petal: mini(petal(40, 60, 1), [-38, -64, 76, 67], 30),
+      stamen: mini(stamen(48), [-8, -56, 16, 46], 34),
+      pistil: diagram(urn + pistilTags),
+    },
+    dia: { stamen: stamenDia("#D9BC4F", `<ellipse cx="34" cy="17" rx="9" ry="11" fill="#E3A51C" stroke="#A8700A"/>`) },
+    find: {
+      sepal: "꽃받침은 5장이에요. 장미와 친척인 벚나무, 사과나무, 딸기도 대부분 꽃받침이 5장, 꽃잎이 5장이에요.",
+      petal: "41장이나 돼요! 그런데 들에서 자라는 장미는 꽃잎이 5장뿐이에요. 수술이 될 자리에 꽃잎이 생긴 장미를 사람들이 골라 오랫동안 키워서, 꽃잎이 겹겹이 많아졌어요. 지금 장미 품종은 3만 가지가 넘어요.",
+      stamen: "꽃잎 속에 꼭꼭 숨어 있었죠? 바깥쪽에 빙 둘러 난 것이 수술이에요. 진짜 장미에는 훨씬 더 많아요. 그림에는 24개만 그렸어요.",
+      pistil: "한가운데 모여 있는 것이 암술이에요. 장미는 암술도 여러 개예요. 수술과 암술이 꽃잎에 푹 덮여 있어서 꽃가루받이가 잘 안 돼요. 그래서 장미 열매는 보기 힘들어요. 꽃가루받이가 되면 꽃받침 아래쪽이 부풀어 열매(로즈힙)가 돼요.",
+    },
+    done: "꽃받침은 5장인데 꽃잎은 41장! 장미 가시는 줄기 껍질이 변한 거예요. 동물에게서 몸을 지키고, 덩굴장미가 다른 것을 타고 오르게 도와줘요.",
+  };
+}
+
+function azalea() {
+  // 통꽃: 다섯 갈래가 아래에서 붙은 한 장짜리 꽃잎
+  let d = "";
+  for (let t = 0; t <= 360; t += 2) {
+    const r = 152 * (.62 + .38 * Math.abs(Math.cos(2.5 * t * RAD)) ** .55);
+    d += `${t ? "L" : "M"}${r1(r * Math.sin(t * RAD))},${r1(-r * Math.cos(t * RAD))}`;
+  }
+  let corolla = `<path d="${d}Z" fill="url(#azG)" stroke="#D9588C" stroke-width="1.2"/>`;
+  for (let i = 0; i < 5; i++) {
+    corolla += rot(i * 72, `<path d="M0,-30V-128" stroke="#FCD6E4" stroke-width="1.6"/>`) +
+      rot(i * 72 + 36, `<path d="M0,-44V-94" stroke="#E0709B" stroke-width="1.2"/>`);
+  }
+  for (let i = 0; i < 16; i++) corolla += `<ellipse cx="${i * 29 % 46 - 23}" cy="${-52 - i * 17 % 52}" rx="2.6" ry="3.4" fill="#B02A66"/>`;
+  corolla += `<circle r="15" fill="url(#azThroat)"/>`;
+  const stamen = (a, L) => {
+    const ex = L * Math.sin(a * RAD), ey = -L * Math.cos(a * RAD), k = ex < 0 ? -.14 : .14;
+    const p = `M0,0Q${r1(ex * .5 - ey * k)},${r1(ey * .5 + ex * k)} ${r1(ex)},${r1(ey)}`;
+    return `<path d="${p}" fill="none" stroke="#C9578A" stroke-width="4.2" stroke-linecap="round"/>` +
+      `<path d="${p}" fill="none" stroke="#FFF0F6" stroke-width="2.4" stroke-linecap="round"/>` +
+      `<ellipse cx="${r1(ex)}" cy="${r1(ey)}" rx="5.4" ry="3.6" fill="#7B3F2A" stroke="#4E2416" transform="rotate(${r1(a)} ${r1(ex)} ${r1(ey)})"/>` + hit(p);
+  };
+  const sepal = `<path d="${leaf(13, 48)}" fill="url(#leafG)" stroke="#2F7D4C"/>`;
+  const style = "M0,0Q16,70 -4,128";
+  const parts = [];
+  for (let i = 0; i < 5; i++) parts.push(["sepal", rot(i * 72 + 36, sepal)]);
+  parts.push([null, `<circle r="10" fill="#CFE39A" stroke="#9DBB5C"/>`]);
+  parts.push(["petal", corolla]);
+  for (let i = 0; i < 10; i++) parts.push(["stamen", stamen(66 + i * 25.33, i % 2 ? 100 : 80)]);
+  parts.push(["pistil", `<path d="${style}" fill="none" stroke="#A12D5E" stroke-width="4.8" stroke-linecap="round"/>` +
+    `<path d="${style}" fill="none" stroke="#F06C9B" stroke-width="2.8" stroke-linecap="round"/>` +
+    `<circle cx="-4" cy="130" r="5.6" fill="#C2185B" stroke="#7A1040"/>` + hit(style)]);
+  return {
+    id: "azalea", name: "철쭉", parts,
+    ask: "철쭉 꽃잎은 5장일까요? 꽃잎을 눌러서 확인해 보세요.",
+    unit: { sepal: "갈래", petal: "장", stamen: "개", pistil: "개" },
+    sum: { sepal: "5갈래", petal: "1장 (통꽃)", stamen: "10개", pistil: "1개" },
+    mini: {
+      sepal: mini(sepal, [-14, -51, 28, 54], 30),
+      petal: mini(corolla, [-158, -158, 316, 316], 84),
+      stamen: mini(stamen(0, 100), [-10, -108, 30, 112], 50),
+      pistil: diagram(`<circle cx="34" cy="116" r="8" fill="#9CC466" stroke="#5C8A30"/>` +
+        `<path d="M34,108Q20,62 46,22" fill="none" stroke="#F06C9B" stroke-width="3.4" stroke-linecap="round"/>` +
+        `<circle cx="47" cy="19" r="5.4" fill="#C2185B" stroke="#7A1040"/>` + pistilTags),
+    },
+    dia: { stamen: stamenDia("#E58BB0", `<ellipse cx="34" cy="17" rx="9" ry="11" fill="#7B3F2A" stroke="#4E2416"/>`) },
+    find: {
+      sepal: "꽃잎 뒤에 숨어 있던 작은 꽃받침이에요. 다섯 갈래로 갈라져 있고, 만지면 끈적끈적해요.",
+      petal: "5장인 줄 알았는데 통째로 쏙 빠졌어요! 철쭉은 꽃잎 아래쪽이 하나로 붙어 있어요. 이런 꽃을 '통꽃'이라고 해요. 위쪽의 진한 점무늬는 곤충에게 꿀이 있는 곳을 알려 주는 안내판이에요.",
+      stamen: "수술은 10개예요. 길이가 조금씩 달라요.",
+      pistil: "암술은 1개예요. 수술보다 길게 쭉 뻗어 있어요. 왜 그럴까요? 찾아온 곤충의 몸에 먼저 닿아서, 다른 꽃의 꽃가루를 받기 좋아요.",
+    },
+    done: "철쭉은 꽃잎이 한 덩어리인 통꽃이에요. ⚠️ 철쭉에는 독이 있어서 먹으면 안 돼요. 닮은 꽃 진달래는 먹을 수 있어서 '참꽃', 철쭉은 '개꽃'이라고 불렀어요.",
+  };
+}
+
+/* ---------- 꽃 분해하기 ---------- */
+const KIND = {
+  sepal:  { name: "꽃받침", color: "#4E9F6A", role: "꽃잎을 아래에서 받쳐 줘요. 꽃봉오리일 때는 꽃을 감싸서 지켜 줘요." },
+  petal:  { name: "꽃잎",   color: "#E84C82", role: "암술과 수술을 감싸서 지켜 주고, 고운 색과 향기로 곤충을 불러요." },
+  stamen: { name: "수술",   color: "#E3A51C", role: "꽃가루를 만들어요. 끝에 달린 주머니(꽃밥) 안에 꽃가루가 들어 있어요." },
+  pistil: { name: "암술",   color: "#86B84F", role: "꽃가루를 받아 씨를 만들어요. 아래쪽 통통한 씨방 안에서 씨가 자라요." },
+};
+const ORDER = Object.keys(KIND);
+const FLOWERS = [lily(), rose(), azalea()];
+const flowerEl = $("flower"), tray = $("tray"), said = $("said"), doneEl = $("done"), picker = $("picker");
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const solved = new Set();
+let cur, got, total;
+
+FLOWERS.forEach((f, i) => {
+  const b = document.createElement("button");
+  b.innerHTML = `<svg viewBox="-200 -200 400 400" aria-hidden="true">${f.parts.map((p) => p[1]).join("")}</svg>${f.name}`;
+  b.addEventListener("click", () => load(i));
+  picker.appendChild(b);
+});
+
+function load(i) {
+  cur = FLOWERS[i];
+  got = {}; total = {};
+  ORDER.forEach((k) => { got[k] = 0; total[k] = cur.parts.filter((p) => p[0] === k).length; });
+  flowerEl.innerHTML = cur.parts.map(([k, h]) => k
+    ? `<g class="part" data-kind="${k}" tabindex="0" role="button" aria-label="${KIND[k].name} 떼기">${h}</g>` : h).join("");
+  tray.innerHTML = ORDER.map((k) => `
+    <div class="box" data-kind="${k}">
+      <div class="box-head"><i style="background:${KIND[k].color}"></i><span class="box-name">${KIND[k].name}</span>
+        <button class="all">한꺼번에</button><span class="box-count"><b>0</b> / ${total[k]}${cur.unit[k]}</span></div>
+      <p class="role">${KIND[k].role}</p>
+      <div class="specimens"></div>
+      <div class="find" hidden>${cur.dia[k] || ""}<p>${cur.find[k]}</p></div>
+    </div>`).join("");
+  said.textContent = cur.ask;
+  doneEl.hidden = true;
+  $("videoLink").hidden = !cur.video;
+  $("realPhoto").src = `images/real-${cur.id}.jpg`;
+  $("realPhoto").alt = `실제 ${cur.name} 사진`;
+  $("realCap").textContent = `실제 ${cur.name} 사진이에요. 그림과 무엇이 닮았는지 비교해 보세요.`;
+  [...picker.children].forEach((b, j) => b.classList.toggle("active", j === i));
+}
+
+function pluck(el) {
+  if (!el.isConnected || el.classList.contains("gone")) return;
+  el.classList.add("gone");
+  const k = el.dataset.kind, n = ++got[k], box = tray.querySelector(`[data-kind=${k}]`);
+  const b = el.getBBox(), x = b.x + b.width / 2, y = b.y + b.height / 2, d = Math.hypot(x, y) || 1;
+  el.animate([{ opacity: 1 }, {
+    transform: `translate(${r1(x / d * 90)}px,${r1(y / d * 90 - 40)}px) rotate(${x < 0 ? -30 : 30}deg) scale(.6)`, opacity: 0,
+  }], { duration: calm ? 0 : 450, easing: "ease-in", fill: "forwards" }).onfinish = () => el.remove();
+  box.querySelector("b").textContent = n;
+  box.querySelector(".specimens").insertAdjacentHTML("beforeend", cur.mini[k]);
+  said.textContent = `${KIND[k].name}을 떼었어요 · ${n} / ${total[k]}${cur.unit[k]}`;
+  if (n < total[k]) return;
+  box.classList.add("done");
+  box.querySelector(".find").hidden = false;
+  solved.add(cur.id + k);
+  compare();
+  if (ORDER.every((q) => got[q] === total[q])) {
+    said.textContent = "다 떼었어요. 가운데 남은 것은 꽃받기예요. 꽃의 모든 부분이 여기에 붙어 있었어요.";
+    doneEl.innerHTML = `<b>${cur.name} 분해 끝!</b>${cur.done}`;
+    doneEl.hidden = false;
+  }
+}
+
+function compare() {
+  $("compare").innerHTML = `<tr><th></th>${FLOWERS.map((f) => `<th>${f.name}</th>`).join("")}</tr>` +
+    ORDER.map((k) => `<tr><th>${KIND[k].name}</th>${FLOWERS.map((f) =>
+      solved.has(f.id + k) ? `<td>${f.sum[k]}</td>` : `<td class="q">?</td>`).join("")}</tr>`).join("");
+}
+
+flowerEl.addEventListener("click", (e) => { const p = e.target.closest(".part"); if (p) pluck(p); });
+flowerEl.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("part")) { e.preventDefault(); pluck(e.target); }
+});
+tray.addEventListener("click", (e) => {
+  const all = e.target.closest(".all");
+  if (!all) return;
+  [...flowerEl.querySelectorAll(`.part[data-kind=${all.closest(".box").dataset.kind}]:not(.gone)`)]
+    .forEach((el, i) => setTimeout(() => pluck(el), calm ? 0 : i * 45));
+});
+$("resetBtn").addEventListener("click", () => load(FLOWERS.indexOf(cur)));
+
+/* ---------- 여러 가지 꽃 ---------- */
+const GROUP = { free: "갈래꽃", tube: "통꽃", many: "모여 피는 꽃", wind: "바람이 돕는 꽃", bird: "새가 돕는 꽃" };
+const ITEMS = [
+  { name: "찔레꽃", emoji: "🤍", group: "free", file: "jjille.jpg", when: "5~6월",
+    fact: "들에서 자라는 야생 장미예요. 꽃잎이 딱 5장이죠? 수술과 암술도 훤히 보여요. 우리가 아는 겹겹의 장미는 이런 들장미를 사람이 오랫동안 가꾸어 만든 거예요." },
+  { name: "벚꽃", emoji: "🌸", group: "free", file: "cherry.jpg", when: "4월",
+    fact: "장미와 친척이에요. 그래서 꽃잎도 5장, 꽃받침도 5장! 꽃잎 끝이 살짝 파여 있어요. 꽃이 지고 나면 그 자리에 버찌가 열려요." },
+  { name: "무궁화", emoji: "🌺", group: "free", file: "mugung.jpg", when: "7~9월",
+    fact: "우리나라 꽃이에요. 꽃잎은 5장이고, 수술 여러 개가 암술대를 통처럼 감싸고 있어요. 한 송이는 아침에 피어 저녁에 지지만, 날마다 새 꽃이 피어서 여름 내내 볼 수 있어요." },
+  { name: "튤립", emoji: "🌷", group: "free", file: "tulip.jpg", when: "4~5월",
+    fact: "백합과 친척이에요. 백합처럼 꽃받침과 꽃잎이 똑같이 생겨서 꽃잎이 6장으로 보여요. 수술은 6개, 암술은 1개예요." },
+  { name: "진달래", emoji: "💗", group: "tube", file: "jindal.jpg", when: "3~4월",
+    fact: "철쭉과 친척인 통꽃이에요. 잎보다 꽃이 먼저 피어요. 철쭉과 달리 먹을 수 있어서, 옛날부터 꽃잎으로 화전을 부쳐 먹었어요." },
+  { name: "개나리", emoji: "💛", group: "tube", file: "gaenari.jpg", when: "3~4월",
+    fact: "꽃잎이 4장처럼 보이지만 아래쪽이 하나로 붙어 있는 통꽃이에요. 떨어진 꽃을 주워 보면 통째로 떨어져 있어요." },
+  { name: "나팔꽃", emoji: "🎺", group: "tube", file: "napal.jpg", when: "7~9월",
+    fact: "나팔 모양의 통꽃이에요. 이른 아침에 활짝 피고, 한낮이 되면 오므라들어요." },
+  { name: "호박꽃", emoji: "🎃", group: "tube", when: "6~9월",
+    pair: { a: ["암꽃 보기", "pumpkin-f.jpg"], b: ["수꽃 보기", "pumpkin-m.jpg"] },
+    fact: "호박은 암꽃과 수꽃이 따로 피어요. 암꽃 아래에는 아기 호박처럼 통통한 씨방이 달려 있어요. 벌이 수꽃의 꽃가루를 암꽃으로 옮겨 주면 씨방이 자라서 호박이 돼요." },
+  { name: "해바라기", emoji: "🌻", group: "many", file: "sunflower.jpg", when: "8~9월",
+    fact: "한 송이처럼 보이지만 작은 꽃 수백 송이가 모인 거예요. 가장자리의 노란 꽃잎 하나, 가운데 작은 점 하나하나가 모두 꽃이에요." },
+  { name: "민들레", emoji: "🌼", group: "many", file: "dandelion.jpg", when: "4~5월",
+    fact: "꽃잎처럼 보이는 것 하나하나가 꽃 한 송이예요. 꽃마다 씨가 하나씩 생기고, 솜털을 달고 바람에 날아가요." },
+  { name: "수국", emoji: "💠", group: "many", file: "hydrangea.jpg", when: "6~7월",
+    fact: "꽃잎처럼 보이는 것은 사실 꽃받침이에요. 백합의 바깥쪽 3장처럼요. 흙의 성질에 따라 꽃 색이 파랑이나 분홍으로 달라져요." },
+  { name: "옥수수", emoji: "🌽", group: "wind", when: "7~8월",
+    pair: { a: ["수꽃 보기", "corn-m.jpg"], b: ["암꽃 보기", "corn-f.jpg"] },
+    fact: "꽃잎이 없는 꽃이에요. 꼭대기 수꽃의 꽃가루가 바람에 날려, 아래쪽 암꽃의 수염(암술)에 붙어요. 곤충을 부를 필요가 없어서 꽃이 화려하지 않아요. 수염 한 가닥이 옥수수 알 하나와 이어져 있어요." },
+  { name: "동백꽃", emoji: "🐦", group: "bird", file: "camellia.jpg", when: "겨울~이른 봄",
+    fact: "곤충이 거의 없는 추운 겨울에 피어요. 그럼 꽃가루는 누가 옮길까요? 동박새가 꿀을 먹으러 왔다가 꽃가루를 묻혀 옮겨 줘요." },
+];
+
+let current = 0;
+let view = "a";
+const photo = $("photo"), buttonsEl = $("buttons"), viewToggle = $("viewToggle");
+
+ITEMS.forEach((item, i) => {
+  const b = document.createElement("button");
+  b.innerHTML = `<span class="emoji">${item.emoji}</span>${item.name}`;
+  b.addEventListener("click", () => show(i));
+  buttonsEl.appendChild(b);
+});
+
+function render() {
+  const item = ITEMS[current];
+  photo.src = "images/" + (item.pair ? item.pair[view][1] : item.file);
+  photo.alt = item.name + (item.pair ? " " + item.pair[view][0].replace(" 보기", "") : "");
+  $("aBtn").classList.toggle("on", view === "a");
+  $("bBtn").classList.toggle("on", view === "b");
+}
+
+function show(i) {
+  current = (i + ITEMS.length) % ITEMS.length;
+  const item = ITEMS[current];
+  view = "a";
+  viewToggle.classList.toggle("on", !!item.pair);
+  if (item.pair) { $("aBtn").textContent = item.pair.a[0]; $("bBtn").textContent = item.pair.b[0]; }
+  $("capName").innerHTML = `<span class="emoji">${item.emoji}</span>${item.name}`;
+  $("capWhen").innerHTML = `피는 때: ${item.when}<span class="tag ${item.group}">${GROUP[item.group]}</span>`;
+  $("capFact").textContent = item.fact;
+  buttonsEl.querySelectorAll("button").forEach((b, j) => {
+    b.classList.toggle("active", j === current);
+    if (j === current) buttonsEl.scrollLeft = b.offsetLeft - buttonsEl.offsetLeft - buttonsEl.clientWidth / 2 + b.offsetWidth / 2;
+  });
+  render();
+}
+
+function setView(v) { view = v; render(); }
+$("aBtn").addEventListener("click", () => setView("a"));
+$("bBtn").addEventListener("click", () => setView("b"));
+$("prevBtn").addEventListener("click", () => show(current - 1));
+$("nextBtn").addEventListener("click", () => show(current + 1));
+$("carPrev").addEventListener("click", () => buttonsEl.scrollLeft -= buttonsEl.clientWidth * 0.8);
+$("carNext").addEventListener("click", () => buttonsEl.scrollLeft += buttonsEl.clientWidth * 0.8);
+document.addEventListener("keydown", (e) => {
+  if ($("garden").hidden) return;
+  if (e.key === "ArrowLeft") show(current - 1);
+  if (e.key === "ArrowRight") show(current + 1);
+  if (ITEMS[current].pair && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); setView(view === "a" ? "b" : "a"); }
+});
+
+/* ---------- 화면 바꾸기 ---------- */
+function mode(m) {
+  $("lab").hidden = m !== "lab";
+  $("garden").hidden = m !== "garden";
+  $("labBtn").classList.toggle("on", m === "lab");
+  $("gardenBtn").classList.toggle("on", m === "garden");
+  if (m === "garden") show(current);
+}
+$("labBtn").addEventListener("click", () => mode("lab"));
+$("gardenBtn").addEventListener("click", () => mode("garden"));
+
+load(0);
+compare();
+</script>
+</body>
+</html>
